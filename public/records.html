@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>交易紀錄查詢</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f0fff5;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 95%;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px 0 0;
+      border: none;
+      border-radius: 4px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    input, select {
+      font-size: 16px;
+      padding: 5px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <!-- 導覽列 -->
+  <div style="background-color:#007BFF; padding:10px 20px; color:white; display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-size:18px;">📱 行動支付系統</div>
+    <div>
+      <a href="index.html" style="color:white; margin-right:15px;">🏠 首頁</a>
+      <a href="records.html" style="color:white; margin-right:15px;">📒 交易紀錄</a>
+      <a href="chart.html" style="color:white; margin-right:15px;">📈 圖表</a>
+      <a href="merchant.html" style="color:white;">🏪 商家</a>
+    </div>
+  </div>
+
+  <h1>交易紀錄查詢</h1>
+  <div class="container">
+    <div>
+      <button onclick="showTransactions()">查詢紀錄</button>
+      <button onclick="logout()">登出</button>
+      <button onclick="window.location.href='merchant.html'">下一步 ➡️ 商家通知</button>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <label>搜尋商家：</label>
+      <input type="text" id="search-merchant" placeholder="輸入商家關鍵字" />
+      <label>最低金額：</label>
+      <input type="number" id="min-amount" placeholder="例如：100" />
+      <button onclick="filterTransactions()">搜尋</button>
+    </div>
+
+    <div id="transaction-list" style="margin-top:20px;"></div>
+    <button onclick="window.location.href='chart.html'">📈 查看交易圖表</button>
+    <button onclick="resetAll()">🔁 重新開始</button>
+  </div>
+
+  <script>
+    let allTransactions = [];
+
+    function showTransactions() {
+      const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+      if (!loginUser) return alert("尚未登入");
+
+      fetch(`http://localhost:3000/api/transactions?username=${loginUser.username}`)
+        .then(res => res.json())
+        .then(history => {
+          allTransactions = history;
+          renderTransactions(history);
+        });
+    }
+
+    function renderTransactions(data) {
+      const container = document.getElementById("transaction-list");
+      container.innerHTML = "";
+
+      if (data.length === 0) {
+        container.innerHTML = "<p>目前沒有交易紀錄。</p>";
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+      table.style.marginTop = "20px";
+
+      table.innerHTML = `
+        <thead>
+          <tr style="background-color:#e0e0e0;">
+            <th style="border: 1px solid #ccc; padding: 8px;">編號</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">商家</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">金額</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">時間</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      `;
+      container.appendChild(table);
+
+      const tbody = document.getElementById("table-body");
+      data.forEach((record, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${index + 1}</td>
+          <td style="border: 1px solid #ccc; padding: 8px;">${record.merchant}</td>
+          <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">$${record.amount}</td>
+          <td style="border: 1px solid #ccc; padding: 8px;">${record.time}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function filterTransactions() {
+      const keyword = document.getElementById("search-merchant").value.trim();
+      const minAmount = parseFloat(document.getElementById("min-amount").value);
+
+      const filtered = allTransactions.filter(r => {
+        const matchMerchant = keyword === "" || r.merchant.includes(keyword);
+        const matchAmount = isNaN(minAmount) || parseFloat(r.amount) >= minAmount;
+        return matchMerchant && matchAmount;
+      });
+
+      renderTransactions(filtered);
+    }
+
+    function logout() {
+      localStorage.clear();
+      alert("已登出，返回登入頁");
+      window.location.href = "行動支付系統.html";
+    }
+
+    function resetAll() {
+      localStorage.clear();
+      alert("流程已重設，返回登入頁！");
+      window.location.href = "行動支付系統.html";
+    }
+  </script>
+</body>
+</html>

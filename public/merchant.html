@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>商家接收付款通知</title>
+  <style>
+    body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background-color: #63b9ab; /* 淡橘色背景 */
+        padding: 40px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 95%;  /* ← 加這行讓小螢幕也能自適應 */
+    }
+    button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #FF6600;  /* 橘色按鈕 */
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #cc5200;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 30px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    input, select {
+      font-size: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <!-- 通用導覽列 -->
+  <div style="background-color:#007BFF; padding:10px 20px; color:white; display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-size:18px;">📱 行動支付系統</div>
+    <div>
+      <a href="index.html" style="color:white; margin-right:15px;">🏠 首頁</a>
+      <a href="records.html" style="color:white; margin-right:15px;">📒 交易紀錄</a>
+      <a href="chart.html" style="color:white; margin-right:15px;">📈 圖表</a>
+      <a href="merchant.html" style="color:white;">🏪 商家</a>
+    </div>
+  </div>
+
+  <h1>商家端 - 接收付款通知</h1>
+  <div class="container">
+    <p>點擊以下按鈕以接收最新交易：</p>
+    <button onclick="receivePayment()">接收付款</button>
+    <div id="merchant-message" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+
+    function receivePayment() {
+      const container = document.getElementById("merchant-message");
+      if (!loginUser) return alert("請先登入");
+
+      fetch("http://localhost:3000/api/transactions")
+        .then(res => res.json())
+        .then(history => {
+          // debug log 放這裡！
+          console.log('目前登入商家帳號:', loginUser.username);
+          console.log('所有交易 merchantAccount:', history.map(r => r.merchantAccount));
+
+          const filtered = history.filter(record => record.merchantAccount === loginUser.username);
+
+          if (filtered.length === 0) {
+            container.innerHTML = "<p>目前沒有屬於您的交易紀錄。</p>";
+            return;
+          }
+
+          let html = `
+            <table>
+              <thead>
+                <tr>
+                  <th>編號</th>
+                  <th>商家</th>
+                  <th>金額</th>
+                  <th>時間</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          filtered.forEach((record, index) => {
+            html += `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${record.merchant}</td>
+                <td>$${record.amount}</td>
+                <td>${record.time}</td>
+              </tr>
+            `;
+          });
+
+          html += `</tbody></table>`;
+          container.innerHTML = html;
+        });
+    }
+
+    function resetAll() {
+      localStorage.clear(); // 清除所有本地登入/流程資料
+      alert("流程已重設，返回登入頁！");
+      window.location.href = "行動支付系統.html";
+    }
+  </script>
+
+  <button onclick="window.location.href='records.html'">⬅️ 返回紀錄頁</button>
+  <button onclick="resetAll()">🔁 重新開始</button>
+</body>
+</html>

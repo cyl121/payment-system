@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>註冊帳號</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;  
+      background-color: #f0fff5;
+      padding: 40px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 95%;  /* ← 加這行讓小螢幕也能自適應 */
+    }
+    h2 { text-align: center; }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 30px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    input, select {
+      font-size: 16px;   /* 提高字體大小 */
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <div class="container">
+  <h2>🔐 註冊帳號</h2>
+  <input type="text" id="reg-username" placeholder="輸入帳號" />
+  <input type="password" id="reg-password" placeholder="輸入密碼" />
+  <select id="reg-role">
+    <option value="user">使用者</option>
+    <option value="merchant">商家</option>
+  </select>
+  <button onclick="register()">註冊</button>
+  <button onclick="window.location.href='行動支付系統.html'">⬅️ 返回登入</button>
+</div>
+
+<script>
+  function register() {
+    const username = document.getElementById("reg-username").value.trim();
+    const password = document.getElementById("reg-password").value.trim();
+    const role = document.getElementById("reg-role").value;
+
+    if (!username || !password) {
+      alert("請輸入帳號與密碼");
+      return;
+    }
+
+    fetch("http://localhost:3000/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, role })
+    })
+    .then(async response => {
+      const data = await response.json();
+      if (!response.ok) throw data;
+      alert(data.message);
+      window.location.href = "行動支付系統.html";
+    })
+    .catch(err => {
+      alert(err.message || "註冊失敗");
+    });
+  }
+</script>
+
+
+</body>
+</html>

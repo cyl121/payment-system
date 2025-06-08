@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>確認付款</title>
+  <style>
+    body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background-color: #f0fff5;
+        padding: 40px;
+    }
+    .container {
+        max-width: 800px;
+        margin: auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 95%;
+    }
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+    p {
+        font-size: 18px;
+        margin: 10px 0;
+    }
+    input, button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <div class="container">
+    <h2>確認付款</h2>
+    <div id="summary"></div>
+    <input type="password" id="pwd" placeholder="請輸入付款密碼" />
+    <button onclick="confirmPayment()">確認付款</button>
+  </div>
+
+  <script>
+    const merchant = localStorage.getItem("merchant"); // 顯示名稱
+    const merchantAccount = localStorage.getItem("merchantAccount"); // 商家帳號
+
+    const amount = localStorage.getItem("amount");
+    const method = localStorage.getItem("payMethod");
+    const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+
+    // 顯示付款摘要
+    document.getElementById("summary").innerHTML = `
+      <p>商家：${merchant}</p>
+      <p>金額：$${amount}</p>
+      <p>付款方式：${method}</p>
+    `;
+
+    function confirmPayment() {
+      const pwd = document.getElementById("pwd").value;
+
+      // 驗證登入者密碼
+      if (!pwd || pwd !== loginUser.password) {
+        alert("密碼錯誤！");
+        return;
+      }
+
+      const transaction = {
+        username: loginUser.username,
+        merchant,             // 顯示用
+        merchantAccount,      // 用來讓商家端查詢
+        amount,
+        method,
+        time: new Date().toLocaleString()
+      };
+
+      fetch("http://localhost:3000/api/transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transaction)
+      })
+      
+      .then(res => res.json())
+      .then(data => {
+        alert("付款成功！");
+        localStorage.setItem("lastTransaction", JSON.stringify(transaction));
+        window.location.href = "receipt.html";
+      })
+      .catch(err => {
+        alert("付款失敗，請稍後再試");
+        console.error(err);
+      });
+    }
+  </script>
+</body>
+</html>

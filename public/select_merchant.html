@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>選擇商家</title>
+  <style>
+    body {
+        font-family: "Microsoft JhengHei", sans-serif;
+        background-color: #f0fff5; /* 淡綠色背景 */
+        padding: 40px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 95%;  /* ← 加這行讓小螢幕也能自適應 */
+    }
+    select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+        background-color: #28a745; /* 綠色按鈕 */
+        color: white;
+        border: none;
+    }
+    button:hover {
+        background-color: #218838; /* 深綠滑過 */
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 30px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;   /* ✅ 加這行 */
+    }
+
+    input, select {
+      font-size: 16px;   /* ✅ 加這行 */
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <!-- 通用導覽列 -->
+  <div style="background-color:#007BFF; padding:10px 20px; color:white; display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-size:18px;">📱 行動支付系統</div>
+    <div>
+      <a href="index.html" style="color:white; margin-right:15px;">🏠 首頁</a>
+      <a href="records.html" style="color:white; margin-right:15px;">📒 交易紀錄</a>
+      <a href="chart.html" style="color:white; margin-right:15px;">📈 圖表</a>
+      <a href="merchant.html" style="color:white;">🏪 商家</a>
+    </div>
+  </div>
+  
+  <div class="container">
+    <h2>選擇商家</h2>
+    <label for="merchant">請選擇欲付款的商家：</label>
+    <select id="merchantSelect">
+      <option value="store1">小王便利商店</option>
+      <option value="store2">阿明早餐店</option>
+      <option value="store3">陳媽媽水餃</option>
+    </select>
+
+    <button onclick="selectMerchant()">下一步</button>
+    <button onclick="window.location.href='bind.html'">⬅️ 返回綁定頁</button>
+  </div>
+
+  <script>
+    function selectMerchant() {
+      const select = document.getElementById("merchantSelect");
+      const merchantAccount = select.value; // store1
+      const merchantName = select.selectedOptions[0].text; // 顯示名稱
+      localStorage.setItem("merchantAccount", merchantAccount);
+      localStorage.setItem("merchant", merchantName);
+      window.location.href = "input_amount.html";
+    }
+  </script>
+</body>
+</html>

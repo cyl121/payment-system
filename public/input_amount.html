@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>輸入金額</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f0f2f5;
+      padding: 40px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 95%;  /* ← 加這行讓小螢幕也能自適應 */
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+        background-color: #28a745; /* 綠色按鈕 */
+        color: white;
+        border: none;
+    }
+    button:hover {
+        background-color: #218838; /* 深綠滑過 */
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 30px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;   /* ✅ 加這行 */
+    }
+
+    input, select {
+      font-size: 16px;   /* ✅ 加這行 */
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <div class="container">
+    <h2>輸入付款金額</h2>
+    <label for="amount">請輸入金額（元）：</label>
+    <input type="number" id="amount" placeholder="例如：150" />
+    <button onclick="saveAmount()">下一步</button>
+    <button onclick="window.location.href='select_merchant.html'">⬅️ 返回商家選擇</button>
+  </div>
+
+  <script>
+    function saveAmount() {
+      const amount = document.getElementById("amount").value;
+      if (!amount || isNaN(amount) || amount <= 0) {
+        alert("請輸入有效的金額！");
+        return;
+      }
+
+      localStorage.setItem("amount", amount);
+      window.location.href = "pay.html";
+    }
+  </script>
+</body>
+</html>

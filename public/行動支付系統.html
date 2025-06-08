@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>行動支付系統 - 登入</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #eafff2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 300px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    a {
+      display: block;
+      margin-top: 10px;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <div class="container">
+  <h2>🔐 行動支付登入</h2>
+  <input type="text" id="username" placeholder="帳號" />
+  <input type="password" id="password" placeholder="密碼" />
+  <button onclick="login()">登入</button>
+  <a href="register.html">尚未註冊？點此註冊</a>
+</div>
+
+<script>
+  function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+      alert("請輸入帳號與密碼");
+      return;
+    }
+
+    fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => {
+      if (!res.ok) return res.json().then(err => { throw err });
+      return res.json();
+    })
+    .then(data => {
+      alert(data.message);
+      localStorage.setItem("loginUser", JSON.stringify(data.user));
+
+      // 根據資料庫的身分導頁
+      if (data.user.role === "merchant") {
+        window.location.href = "merchant.html";
+      } else {
+        window.location.href = "bind.html";
+      }
+    })
+    .catch(err => {
+      alert(err.message || "登入失敗");
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>圖表分析</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    canvas {
+      margin-top: 20px;
+    }
+    button, select {
+      margin: 5px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO區塊（點Logo回首頁） -->
+  <div style="position:fixed; top:18px; left:18px; z-index:999;">
+    <a href="index.html" style="display:flex; align-items:center; text-decoration:none;">
+      <img src="./img/logo.png" alt="Logo" style="width:40px; height:40px; border-radius:12px; background:#fff; box-shadow:0 0 8px #ddd;">
+    </a>
+  </div>
+
+  <div class="container" id="chart-container">
+    <h1>📊 交易統計圖表</h1>
+
+    <div>
+      <label>商家：</label>
+      <select id="merchant-select"></select>
+      <button onclick="renderCharts()">📈 產生圖表</button>
+      <button onclick="downloadCharts()">⬇️ 下載圖表</button>
+    </div>
+
+    <canvas id="bar-chart"></canvas>
+    <canvas id="line-chart"></canvas>
+    <canvas id="pie-chart"></canvas>
+  </div>
+
+  <script>
+    let allTransactions = [];
+
+    window.onload = function () {
+      const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+      if (!loginUser) return alert("請先登入");
+
+      fetch(`http://localhost:3000/api/transactions?username=${loginUser.username}`)
+        .then(res => res.json())
+        .then(data => {
+          allTransactions = data;
+          const merchantSet = new Set(data.map(r => r.merchant));
+          const merchantSelect = document.getElementById("merchant-select");
+          merchantSet.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            merchantSelect.appendChild(opt);
+          });
+        });
+    };
+
+    function renderCharts() {
+      const selectedMerchant = document.getElementById("merchant-select").value;
+      const filtered = allTransactions.filter(r => r.merchant === selectedMerchant);
+
+      const labels = filtered.map((_, i) => `第 ${i + 1} 筆`);
+      const amounts = filtered.map(r => parseFloat(r.amount));
+      const colors = filtered.map(() => '#' + Math.floor(Math.random() * 16777215).toString(16));
+
+      const barConfig = {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '金額',
+            data: amounts,
+            backgroundColor: colors
+          }]
+        }
+      };
+
+      const lineConfig = {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '金額變化趨勢',
+            data: amounts,
+            fill: false,
+            borderColor: 'blue'
+          }]
+        }
+      };
+
+      const pieConfig = {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: amounts,
+            backgroundColor: colors
+          }]
+        }
+      };
+
+      new Chart(document.getElementById("bar-chart"), barConfig);
+      new Chart(document.getElementById("line-chart"), lineConfig);
+      new Chart(document.getElementById("pie-chart"), pieConfig);
+    }
+
+    function downloadCharts() {
+      const container = document.getElementById("chart-container");
+      html2canvas(container).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "chart.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>
